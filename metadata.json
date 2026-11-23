@@ -1,0 +1,8 @@
+{
+  "name": "Athenaeum — College Library Management",
+  "description": "College library management portal for student directories, book catalogs, circulation tracking, and borrowing history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

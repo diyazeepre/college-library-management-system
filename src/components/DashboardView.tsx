@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import type {
   BorrowTransactionRecord,

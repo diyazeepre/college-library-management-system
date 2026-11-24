@@ -1,18 +1,22 @@
+'use client';
+
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Menu, Plus, X } from 'lucide-react';
-import { libraryApi } from './api';
-import { BooksView } from './components/BooksView';
-import { CirculationView } from './components/CirculationView';
-import { DashboardView } from './components/DashboardView';
-import { IssueBookModal } from './components/IssueBookModal';
-import { Sidebar } from './components/Sidebar';
-import { StudentsView } from './components/StudentsView';
+import { libraryApi } from '@/api';
+import { BooksView } from '@/components/BooksView';
+import { CirculationView } from '@/components/CirculationView';
+import { DashboardView } from '@/components/DashboardView';
+import { IssueBookModal } from '@/components/IssueBookModal';
+import { Sidebar } from '@/components/Sidebar';
+import { StudentsView } from '@/components/StudentsView';
 import type {
+  BookRecord,
   BorrowTransactionRecord,
   DashboardStats,
   DepartmentSummary,
   NavSection,
-} from './types';
+  StudentRecord,
+} from '@/types';
 
 const SECTION_LABELS: Record<NavSection, string> = {
   overview: 'Overview',
@@ -21,25 +25,47 @@ const SECTION_LABELS: Record<NavSection, string> = {
   students: 'Student Directory',
 };
 
-export default function App() {
+interface LibraryPortalProps {
+  initialDashboard?: {
+    stats: DashboardStats;
+    departments: DepartmentSummary[];
+    recentTransactions: BorrowTransactionRecord[];
+  };
+  initialStudents?: StudentRecord[];
+  initialDepartments?: string[];
+  initialBooks?: BookRecord[];
+  initialTransactions?: BorrowTransactionRecord[];
+  initialError?: string;
+}
+
+export function LibraryPortal({
+  initialDashboard,
+  initialStudents,
+  initialDepartments,
+  initialBooks,
+  initialTransactions,
+  initialError,
+}: LibraryPortalProps) {
   const [activeSection, setActiveSection] = useState<NavSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<BorrowTransactionRecord[]>([]);
-  const [dashboardLoading, setDashboardLoading] = useState(true);
-  const [dashboardError, setDashboardError] = useState<string | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(initialDashboard?.stats ?? null);
+  const [departments, setDepartments] = useState<DepartmentSummary[]>(
+    initialDashboard?.departments ?? []
+  );
+  const [recentTransactions, setRecentTransactions] = useState<BorrowTransactionRecord[]>(
+    initialDashboard?.recentTransactions ?? []
+  );
+  const [dashboardLoading, setDashboardLoading] = useState(!initialDashboard && !initialError);
+  const [dashboardError, setDashboardError] = useState<string | null>(initialError ?? null);
 
   const [refreshKey, setRefreshKey] = useState(0);
   const [updatingRecentId, setUpdatingRecentId] = useState<number | null>(null);
 
-  // Issue Book modal state
   const [issueModalOpen, setIssueModalOpen] = useState(false);
   const [preselectedUsn, setPreselectedUsn] = useState<string | undefined>(undefined);
   const [preselectedBookId, setPreselectedBookId] = useState<number | undefined>(undefined);
 
-  // Toast feedback
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = useCallback((message?: string) => {
@@ -69,8 +95,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (refreshKey === 0 && initialDashboard) {
+      return;
+    }
     loadDashboard();
-  }, [loadDashboard, refreshKey]);
+  }, [loadDashboard, refreshKey, initialDashboard]);
 
   const triggerDataRefresh = useCallback(
     (toastMessage?: string) => {
@@ -121,7 +150,6 @@ export default function App() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar Contract: Breadcrumb on left, 1 primary CTA on right */}
         <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -174,6 +202,7 @@ export default function App() {
           {activeSection === 'circulation' && (
             <CirculationView
               refreshKey={refreshKey}
+              initialTransactions={initialTransactions}
               onOpenIssueModal={() => openIssueModal()}
               onDataChanged={triggerDataRefresh}
             />
@@ -182,6 +211,7 @@ export default function App() {
           {activeSection === 'books' && (
             <BooksView
               refreshKey={refreshKey}
+              initialBooks={initialBooks}
               onIssueBook={(bookId) => openIssueModal({ bookId })}
               onDataChanged={triggerDataRefresh}
             />
@@ -190,6 +220,8 @@ export default function App() {
           {activeSection === 'students' && (
             <StudentsView
               refreshKey={refreshKey}
+              initialStudents={initialStudents}
+              initialDepartments={initialDepartments}
               onIssueToStudent={(usn) => openIssueModal({ usn })}
               onDataChanged={triggerDataRefresh}
             />

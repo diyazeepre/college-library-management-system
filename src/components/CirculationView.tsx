@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, Plus, Search, Trash2 } from 'lucide-react';
 import { libraryApi } from '../api';
@@ -6,6 +8,7 @@ import { formatBorrowDate } from '../utils/format';
 
 interface CirculationViewProps {
   refreshKey: number;
+  initialTransactions?: BorrowTransactionRecord[];
   onOpenIssueModal: () => void;
   onDataChanged: (toastMessage?: string) => void;
 }
@@ -14,11 +17,14 @@ type StatusFilter = 'all' | 'borrowed' | 'returned';
 
 export function CirculationView({
   refreshKey,
+  initialTransactions,
   onOpenIssueModal,
   onDataChanged,
 }: CirculationViewProps) {
-  const [transactions, setTransactions] = useState<BorrowTransactionRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<BorrowTransactionRecord[]>(
+    initialTransactions ?? []
+  );
+  const [loading, setLoading] = useState(!initialTransactions);
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
@@ -35,6 +41,9 @@ export function CirculationView({
   }, [query]);
 
   useEffect(() => {
+    if (refreshKey === 0 && !debouncedQuery && statusFilter === 'all' && initialTransactions) {
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);

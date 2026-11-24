@@ -9,6 +9,7 @@ export function formatBorrowDate(isoString: string): string {
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone: 'UTC',
   }).format(date);
 }
 
@@ -21,5 +22,6 @@ export function formatShortDate(isoString: string): string {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+    timeZone: 'UTC',
   }).format(date);
 }

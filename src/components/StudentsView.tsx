@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, History, Pencil, Search, Trash2, UserPlus, X } from 'lucide-react';
 import { libraryApi } from '../api';
@@ -6,18 +8,22 @@ import { formatBorrowDate } from '../utils/format';
 
 interface StudentsViewProps {
   refreshKey: number;
+  initialStudents?: StudentRecord[];
+  initialDepartments?: string[];
   onIssueToStudent: (usn: string) => void;
   onDataChanged: (toastMessage?: string) => void;
 }
 
 export function StudentsView({
   refreshKey,
+  initialStudents,
+  initialDepartments,
   onIssueToStudent,
   onDataChanged,
 }: StudentsViewProps) {
-  const [students, setStudents] = useState<StudentRecord[]>([]);
-  const [departments, setDepartments] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState<StudentRecord[]>(initialStudents ?? []);
+  const [departments, setDepartments] = useState<string[]>(initialDepartments ?? []);
+  const [loading, setLoading] = useState(!initialStudents);
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
@@ -51,6 +57,9 @@ export function StudentsView({
   }, [query]);
 
   useEffect(() => {
+    if (refreshKey === 0 && !debouncedQuery && selectedDept === 'all' && initialStudents) {
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);

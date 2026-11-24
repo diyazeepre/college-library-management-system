@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowLeftRight, BookOpen, LayoutDashboard, Library, Users, X } from 'lucide-react';
 import type { NavSection } from '../types';
 

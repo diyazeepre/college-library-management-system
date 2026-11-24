@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { BookPlus, Pencil, Search, Trash2, X } from 'lucide-react';
 import { libraryApi } from '../api';
@@ -5,13 +7,19 @@ import type { BookRecord } from '../types';
 
 interface BooksViewProps {
   refreshKey: number;
+  initialBooks?: BookRecord[];
   onIssueBook: (bookId: number) => void;
   onDataChanged: (toastMessage?: string) => void;
 }
 
-export function BooksView({ refreshKey, onIssueBook, onDataChanged }: BooksViewProps) {
-  const [books, setBooks] = useState<BookRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+export function BooksView({
+  refreshKey,
+  initialBooks,
+  onIssueBook,
+  onDataChanged,
+}: BooksViewProps) {
+  const [books, setBooks] = useState<BookRecord[]>(initialBooks ?? []);
+  const [loading, setLoading] = useState(!initialBooks);
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState('');
@@ -37,6 +45,9 @@ export function BooksView({ refreshKey, onIssueBook, onDataChanged }: BooksViewP
   }, [query]);
 
   useEffect(() => {
+    if (refreshKey === 0 && !debouncedQuery && initialBooks) {
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);

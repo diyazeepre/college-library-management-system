@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, Search, Users, X } from 'lucide-react';
 import { libraryApi } from '../api';
